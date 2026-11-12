@@ -85,22 +85,23 @@ browser.
 ### 3. Set the build environment
 
 For static export, `NEXT_PUBLIC_*` values are inlined at build time. The
-function URLs are derived automatically from `NEXT_PUBLIC_SUPABASE_URL`:
+CoderTools public Supabase project URL is baked into the client as a fallback:
 
 ```text
-NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+https://tdecmhvhnxjqvpwsklrv.supabase.co
 ```
 
 That resolves to:
 
 ```text
-https://<project>.supabase.co/functions/v1/codertools-track
-https://<project>.supabase.co/functions/v1/codertools-analytics
+https://tdecmhvhnxjqvpwsklrv.supabase.co/functions/v1/codertools-track
+https://tdecmhvhnxjqvpwsklrv.supabase.co/functions/v1/codertools-analytics
 ```
 
 Override them explicitly if the functions live elsewhere:
 
 ```text
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_TRACK_URL=https://<project>.supabase.co/functions/v1/codertools-track
 NEXT_PUBLIC_SUPABASE_ANALYTICS_URL=https://<project>.supabase.co/functions/v1/codertools-analytics
 ```

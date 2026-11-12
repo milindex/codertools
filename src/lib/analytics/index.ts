@@ -1,11 +1,16 @@
 const TRACK_PROXY_URL = '/api/track';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+// Public Supabase project URL. This is safe to ship in the client bundle and is
+// used as a fallback when the hosting provider has no build-time env configured.
+// Override with NEXT_PUBLIC_SUPABASE_URL for a different project.
+const DEFAULT_SUPABASE_URL = 'https://tdecmhvhnxjqvpwsklrv.supabase.co';
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
 const TRACK_URL =
   process.env.NEXT_PUBLIC_SUPABASE_TRACK_URL ||
-  (SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/codertools-track` : '');
+  `${SUPABASE_URL}/functions/v1/codertools-track`;
 const ANALYTICS_URL =
   process.env.NEXT_PUBLIC_SUPABASE_ANALYTICS_URL ||
-  (SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/codertools-analytics` : '');
+  `${SUPABASE_URL}/functions/v1/codertools-analytics`;
 
 const VISITOR_KEY = 'codertools:visitor-id';
 const SEEN_KEY = 'codertools:visitor-seen';

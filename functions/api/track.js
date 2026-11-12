@@ -58,11 +58,15 @@ export async function onRequest(context) {
     return json({ error: 'Method not allowed.' }, 405);
   }
 
-  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL || '';
+  // Public fallback used when the Pages project has no runtime env configured.
+  // Override with SUPABASE_TRACK_URL or NEXT_PUBLIC_SUPABASE_URL.
+  const DEFAULT_SUPABASE_URL = 'https://tdecmhvhnxjqvpwsklrv.supabase.co';
+  const supabaseUrl =
+    env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const upstreamUrl =
     env.SUPABASE_TRACK_URL ||
     env.NEXT_PUBLIC_SUPABASE_TRACK_URL ||
-    (supabaseUrl ? `${supabaseUrl}/functions/v1/codertools-track` : '');
+    `${supabaseUrl}/functions/v1/codertools-track`;
   if (!upstreamUrl) {
     return json({ error: 'Tracking not configured.' }, 503);
   }
