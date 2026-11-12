@@ -139,6 +139,42 @@ data.
 
 See [docs/ANALYTICS.md](docs/ANALYTICS.md) for setup and deployment.
 
+## Cloudflare Pages deployment
+
+The repo is configured for a static Cloudflare Pages deployment:
+
+| Setting                | Value           |
+| ---------------------- | --------------- |
+| Build command          | `npm run build` |
+| Build output directory | `out`           |
+| Node version           | `22.23.4`       |
+| Framework preset       | None / static   |
+
+`wrangler.jsonc` sets `pages_build_output_dir` to `out`. `.node-version` and
+`.nvmrc` pin Node `22.23.4` for local and CI use.
+
+> **Important:** Cloudflare Pages build environment variables override the
+> version files. If the Pages project has `NODE_VERSION=26.13.1`, change it to
+> `22.23.4` or delete it in **Settings → Environment variables → Build**.
+> Node `26.13.1` is not available in the Pages build image and causes:
+> `node-build: definition not found: 26.13.1`.
+
+Build-time environment variables:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+Runtime variable for the `/api/track` Pages Function:
+
+```text
+SUPABASE_TRACK_URL=https://<project>.supabase.co/functions/v1/codertools-track
+```
+
+The `functions/` directory is deployed alongside `out/` and provides the
+country-stamping proxy. See [docs/ANALYTICS.md](docs/ANALYTICS.md).
+
 ## Development
 
 ```shell
