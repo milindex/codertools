@@ -1,0 +1,10 @@
+.next
+out
+node_modules
+coverage
+artifacts
+package-lock.json
+public
+supabase/.temp
+next-env.d.ts
+*.min.js

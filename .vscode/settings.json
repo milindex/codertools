@@ -1,0 +1,11 @@
+{
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "search.exclude": {
+    "package-lock.json": true
+  },
+  // Multiple language settings for json and jsonc files
+  "[json][jsonc]": {
+    "editor.formatOnSave": true
+  }
+}
