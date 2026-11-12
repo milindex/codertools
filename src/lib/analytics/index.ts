@@ -5,12 +5,22 @@ const TRACK_PROXY_URL = '/api/track';
 const DEFAULT_SUPABASE_URL = 'https://tdecmhvhnxjqvpwsklrv.supabase.co';
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const TRACK_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_TRACK_URL ||
-  `${SUPABASE_URL}/functions/v1/codertools-track`;
-const ANALYTICS_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_ANALYTICS_URL ||
-  `${SUPABASE_URL}/functions/v1/codertools-analytics`;
+const DEFAULT_TRACK_URL = `${DEFAULT_SUPABASE_URL}/functions/v1/codertools-track`;
+const DEFAULT_ANALYTICS_URL = `${DEFAULT_SUPABASE_URL}/functions/v1/codertools-analytics`;
+const TRACK_URLS = Array.from(
+  new Set([
+    process.env.NEXT_PUBLIC_SUPABASE_TRACK_URL ||
+      `${SUPABASE_URL}/functions/v1/codertools-track`,
+    DEFAULT_TRACK_URL,
+  ])
+);
+const ANALYTICS_URLS = Array.from(
+  new Set([
+    process.env.NEXT_PUBLIC_SUPABASE_ANALYTICS_URL ||
+      `${SUPABASE_URL}/functions/v1/codertools-analytics`,
+    DEFAULT_ANALYTICS_URL,
+  ])
+);
 
 const VISITOR_KEY = 'codertools:visitor-id';
 const SEEN_KEY = 'codertools:visitor-seen';
@@ -38,8 +48,8 @@ const generateId = () => {
   return id;
 };
 
-export const analyticsConfigured = Boolean(ANALYTICS_URL);
-export const trackingConfigured = Boolean(TRACK_URL);
+export const analyticsConfigured = ANALYTICS_URLS.length > 0;
+export const trackingConfigured = TRACK_URLS.length > 0;
 
 export const getVisitorId = () => {
   if (typeof window === 'undefined') {
@@ -114,58 +124,60 @@ export async function trackPageView(pathname: string) {
     // The Pages Function is not available in dev or on static-only hosts.
   }
 
-  if (!TRACK_URL) {
+  if (!TRACK_URLS.length) {
     return;
   }
 
-  try {
-    await fetch(TRACK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    markSeen();
-  } catch {
-    // Analytics must never break the page.
+  for (const trackUrl of TRACK_URLS) {
+    try {
+      const response = await fetch(trackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        markSeen();
+        return;
+      }
+    } catch {
+      // Try the next configured endpoint.
+    }
   }
 }
 
 export async function sendHeartbeat() {
-  if (!TRACK_URL || trackingDisabled()) {
+  if (!TRACK_URLS.length || trackingDisabled()) {
     return;
   }
-  try {
-    await fetch(TRACK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        visitorId: getVisitorId(),
-        type: 'heartbeat',
-      }),
-    });
-  } catch {
-    // Ignore network failures.
+
+  for (const trackUrl of TRACK_URLS) {
+    try {
+      await fetch(trackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visitorId: getVisitorId(),
+          type: 'heartbeat',
+        }),
+      });
+      return;
+    } catch {
+      // Try the next configured endpoint.
+    }
   }
 }
 
 export async function fetchAnalytics() {
-  if (!ANALYTICS_URL) {
-    if (
-      typeof window !== 'undefined' &&
-      process.env.NODE_ENV === 'development'
-    ) {
-      console.warn('NEXT_PUBLIC_SUPABASE_ANALYTICS_URL is not set');
+  for (const analyticsUrl of ANALYTICS_URLS) {
+    try {
+      const response = await fetch(analyticsUrl, { cache: 'no-store' });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch {
+      // Try the next configured endpoint.
     }
-    return null;
   }
 
-  try {
-    const response = await fetch(ANALYTICS_URL, { cache: 'no-store' });
-    if (!response.ok) {
-      return null;
-    }
-    return await response.json();
-  } catch {
-    return null;
-  }
+  return null;
 }

@@ -1,16 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'https://codertools.milinds.dev',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowOrigin =
-    origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+// Public, read-only aggregate endpoint. No credentials are used, so it is safe
+// to allow the custom domain and Cloudflare Pages preview domains.
+function getCorsHeaders(_origin: string | null) {
   return {
-    'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
